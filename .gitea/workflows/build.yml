@@ -1,0 +1,27 @@
+name: Build, Scan and Deploy
+run-name: ${{ gitea.actor }} is building, testing and deploying the static page
+on: [push]
+
+jobs:
+  build-image:
+    runs-on: ubuntu-latest
+    if: gitea.ref == 'refs/heads/main'
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v3
+        with:
+          github-server-url: 'https://git.secretmine.de/'
+      - name: Login to Registry
+        uses: docker/login-action@v3
+        with:
+          registry: git.secretmine.de
+          username: ${{ secrets.REGISTRY_USER }}
+          password: ${{ secrets.REGISTRY_TOKEN }}
+      - name: Build Image
+        uses: docker/build-push-action@v5
+        with:
+          file: Containerfile
+          context: .
+          push: true
+          tags: git.secretmine.de/secretminede/whisper:latest
+          
